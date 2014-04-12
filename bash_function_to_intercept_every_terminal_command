@@ -1,0 +1,21 @@
+
+#From http://stackoverflow.com/a/19403698/1344732  How to intercept bash commands.  
+
+hook() {
+    echo "$@"
+}
+
+invoke_hook() {
+    # http://stackoverflow.com/a/23036401/1344732
+    # If this command is run because of tab completion, ignore it
+    [ -n "$COMP_LINE" ] && return 
+    # If the command is run to set up the prompt or window title, ignore it
+    [ "$BASH_COMMAND" = "$PROMPT_COMMAND" ] && return
+    # If this command is run as part of apple's resume function described in /etc/bashrc, ignore it.  This prevents the command from being printed out twice somehow. 
+    [ "$BASH_COMMAND" = "update_terminal_cwd" ] && return
+    #edited history in /etc/bashrc to be export HISTTIMEFORMAT="+%F %T+ so that I can get rid of the timestamp witht the following regex."
+    local command=`history 1 | sed -e "s/^[ ]*[0-9]*[ ]*\+.*\+ //g"`;
+    hook "$command"
+}
+
+trap 'invoke_hook' DEBUG
