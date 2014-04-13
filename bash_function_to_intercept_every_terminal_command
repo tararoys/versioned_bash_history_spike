@@ -12,10 +12,7 @@ hook() {
     git add "${myfile}.history"
     git commit -m "$printout"
     return 1 #misusing the extdebug 
-    
-    #sed -n '1,$'p "${myfile}${mytime}.log" #Hacky way of getting stuff to print out. 
-    #Append day's history to daily history file. If daily history file does not exist, create one daily history file.   
-    #Create commit the 
+
     #
 }
 
