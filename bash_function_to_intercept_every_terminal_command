@@ -1,8 +1,22 @@
-
 #From http://stackoverflow.com/a/19403698/1344732  How to intercept bash commands.  
 
 hook() {
-    echo "$@"
+    local mytime=`date +%s` #time since unix epoch
+    local myfile="/users/tlroys/Desktop/fancy_history_scratch/" #temp directory I am logging files in.
+    echo "$@" >> "${myfile}.history"
+    echo "${mytime} ${@}" >> "${myfile}${mytime}.log" #write header on logfile
+    echo "" >> "${myfile}${mytime}.log" #write a space
+    $@ >> "${myfile}${mytime}.log" #execute command and pipe the result to a logfile
+    local printout=`cat "${myfile}${mytime}.log"` #Better way of getting stuff to print out.
+    echo "$printout" #stuff. 
+    git add "${myfile}.history"
+    git commit -m "$printout"
+    return 1 #misusing the extdebug 
+    
+    #sed -n '1,$'p "${myfile}${mytime}.log" #Hacky way of getting stuff to print out. 
+    #Append day's history to daily history file. If daily history file does not exist, create one daily history file.   
+    #Create commit the 
+    #
 }
 
 invoke_hook() {
@@ -15,6 +29,7 @@ invoke_hook() {
     [ "$BASH_COMMAND" = "update_terminal_cwd" ] && return
     #edited history in /etc/bashrc to be export HISTTIMEFORMAT="+%F %T+ so that I can get rid of the timestamp witht the following regex."
     local command=`history 1 | sed -e "s/^[ ]*[0-9]*[ ]*\+.*\+ //g"`;
+    shopt -s extdebug #setting the extdebug command so that the shell prevents the command from being run after I'm done trapping it. This prevents me from running the command twice: once in my hook function, and once after the trap is done. 
     hook "$command"
 }
 
